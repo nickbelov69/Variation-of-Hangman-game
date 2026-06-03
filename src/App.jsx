@@ -1,4 +1,4 @@
-import {useRef, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import './App.css'
 import "./languages.jsx"
 import {languages} from "./languages.jsx";
@@ -9,23 +9,90 @@ import {words} from './words.jsx';
 
 export default function AssemblyEndgame() {
 
+
     console.log(words.length)
     //State инфа
     const [currentWord, setCurrentWord] = useState(chooseRandomWord());
     const [answer, setAnswer] = useState([]);
+    const winMusic = useRef(new Audio("/sounds/win.mp3"));
+    const loseMusic = useRef(new Audio("/sounds/lose.mp3"));
+    const audioUnlocked = useRef(false)
+    const startMusic = useRef(new Audio("/sounds/game-start.mp3"))
+
+
+
+
+    function getInitialTime(word) {
+        return word.length > 6 ? 90 : 60
+    }
+    const [timeLeft, setTimeLeft] = useState(
+        getInitialTime(currentWord)
+    )
+
+    function playStartSound() {
+        startMusic.current.currentTime = 0
+        startMusic.current.play().catch(console.log)
+
+    }
+
+    function playWinSound() {
+        winMusic.current.currentTime = 0
+        winMusic.current.play().catch(console.log)
+
+    }
+
+    function playLoseSound() {
+        loseMusic.current.currentTime = 0
+        loseMusic.current.play().catch(console.log)
+
+    }
+
 
     //Derived инфа
     const wrongTriesCount = answer.filter(letter => !currentWord.toUpperCase().includes(letter)).length;
     const isGameWon = currentWord.toUpperCase().split("").every(letter =>
     answer.includes(letter))
-    const isGameLost = wrongTriesCount > languages.length - 1
+    const isTimeUp = timeLeft <= 0
+    const isGameLost = wrongTriesCount > languages.length - 1 || isTimeUp
     const isGameOver = isGameWon || isGameLost
     const lastGuessedLetter = answer[answer.length - 1]
     const isLastGuessIncorrect = lastGuessedLetter && !currentWord.toUpperCase().includes(lastGuessedLetter)
 
 
+
     //Static инфа
     const alphabet = "abcdefghijklmnopqrstuvwxyz"
+
+
+    useEffect(() => {
+        if (isGameOver) return
+        const timer = setInterval(() => {
+            setTimeLeft(prev => prev - 1)
+        }, 1000)
+        return () => clearInterval(timer)
+    }, [isGameOver])
+
+    useEffect(() => {
+        function handleFirstClick() {
+            audioUnlocked.current = true
+            playStartSound()
+            document.removeEventListener("click", handleFirstClick)
+        }
+        document.addEventListener("click", handleFirstClick)
+        return () => document.removeEventListener("click", handleFirstClick)
+    }, [])
+
+    useEffect(() => {
+        if (isGameWon) {
+            startMusic.current.pause()
+            startMusic.current.currentTime = 0
+            playWinSound()
+        } else if (isGameLost) {
+            startMusic.current.pause()
+            startMusic.current.currentTime = 0
+            playLoseSound()
+        }
+    }, [isGameOver])
 
 
     const ourWord = currentWord.toUpperCase().split("").map((letter, index) => {
@@ -108,6 +175,7 @@ export default function AssemblyEndgame() {
                     <Confetti
                         numberOfPieces="1000"
                     />
+
             </>
             )
         } if (isGameLost) {
@@ -121,12 +189,17 @@ export default function AssemblyEndgame() {
         return null
     }
 
-    function StartNewGame () {
-        setCurrentWord(chooseRandomWord());
+    function StartNewGame() {
+        winMusic.current.pause()
+        winMusic.current.currentTime = 0
+        loseMusic.current.pause()
+        loseMusic.current.currentTime = 0
+        const newWord = chooseRandomWord()
+        setCurrentWord(newWord)
         setAnswer([])
+        setTimeLeft(getInitialTime(newWord))
+        playStartSound()
     }
-
-
 
     return (
 
@@ -147,6 +220,10 @@ export default function AssemblyEndgame() {
           <section className="chips">
               {languageElements}
           </section>
+
+          <p className="timer">
+              Time Left: {timeLeft} seconds
+          </p>
 
           <section
               className="the-word">
