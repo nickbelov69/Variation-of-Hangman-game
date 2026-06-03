@@ -273,6 +273,25 @@ span.chip.lost::before {
   border: 0;
 }
 
-  .timer {
-    margin-top: 0;
-  }
+.timer {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  transition: color 0.5s, text-shadow 0.5s;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 6px 16px;
+  backdrop-filter: blur(6px);
+}
+
+.timer.urgent {
+  color: #EC5D49;
+  border-color: rgba(236, 93, 73, 0.4);
+  animation: timerPulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes timerPulse {
+  from { text-shadow: 0 0 5px #EC5D49; }
+  to   { text-shadow: 0 0 18px #EC5D49, 0 0 30px rgba(236, 93, 73, 0.5); }
+}

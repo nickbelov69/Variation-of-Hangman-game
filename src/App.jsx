@@ -18,6 +18,7 @@ export default function AssemblyEndgame() {
     const loseMusic = useRef(new Audio("/sounds/lose.mp3"));
     const audioUnlocked = useRef(false)
     const startMusic = useRef(new Audio("/sounds/game-start.mp3"))
+    const [farewellText, setFarewellText] = useState("")
 
 
 
@@ -63,6 +64,12 @@ export default function AssemblyEndgame() {
     //Static инфа
     const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
+
+    useEffect(() => {
+        if (isLastGuessIncorrect) {
+            setFarewellText(getFarewellText(languages[wrongTriesCount - 1].name))
+        }
+    }, [wrongTriesCount])
 
     useEffect(() => {
         if (isGameOver) return
@@ -163,7 +170,7 @@ export default function AssemblyEndgame() {
         if (!isGameOver && isLastGuessIncorrect) {
            return (
                <p className="farewell-message">
-                   {getFarewellText(languages[wrongTriesCount - 1].name)}
+                   {farewellText}
                </p>
            )
         }
@@ -221,7 +228,7 @@ export default function AssemblyEndgame() {
               {languageElements}
           </section>
 
-          <p className="timer">
+          <p className={`timer ${timeLeft <= 10 ? "urgent" : ""}`}>
               Time Left: {timeLeft} seconds
           </p>
 
