@@ -5,11 +5,11 @@ import {languages} from "./languages.jsx";
 import clsx from 'clsx'
 import {getFarewellText, chooseRandomWord} from "./utilis.jsx";
 import Confetti from 'react-confetti'
-
-
+import {words} from './words.jsx';
 
 export default function AssemblyEndgame() {
-   
+
+    console.log(words.length)
     //State инфа
     const [currentWord, setCurrentWord] = useState(chooseRandomWord());
     const [answer, setAnswer] = useState([]);
